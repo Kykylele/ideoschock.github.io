@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<!-- ========== 1. ПОДКЛЮЧЕНИЕ ШРИФТОВ ========== -->
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<!-- ========== 2. НОВЫЙ CSS ========== -->
+<style>
+/* ---------- 1. переменные ---------- */
+:root{
+  --gold:#ffd500;      /* декорация */
+  --black:#000000;
+  --dark:#0a0a0a;
+  --yellow:#b89400;    /* полоски */
+  --blood:#c10000;     /* текст */
+}
+
+/* ---------- 2. база ---------- */
+html,body{margin:0;height:100%;}
+body{
+  background:var(--black);
+  font-family:'JetBrains Mono',monospace;
+  color:#fff;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
+}
+
+/* ---------- 3. анимация полосок ---------- */
+.stripes{
+  position:fixed; inset:0; z-index:0;
+  background:
+    repeating-linear-gradient(to right, var(--yellow) 0 120px, var(--black) 120px 240px),
+    repeating-linear-gradient(to bottom,var(--yellow) 0 120px, var(--black) 120px 240px);
+  background-size:240px 240px;
+  animation:stripes 3s linear infinite;
+}
+@keyframes stripes{to{background-position:240px 240px;}}
+
+/* ---------- 4. боковые панели ---------- */
+.side{ position:fixed; top:0; bottom:0; width:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:1; }
+.side.left{left:0; background:linear-gradient(to bottom,var(--gold),#b89400);}
+.side.right{right:0; background:linear-gradient(to bottom,var(--black),#1a1a1a);}
+
+/* фото */
+.side img{ width:160px; height:160px; border-radius:50%; object-fit:cover; filter:saturate(1.2); }
+.side.left img{border:4px solid var(--black);}
+.side.right img{border:4px solid #fff;}
+
+/* подписи */
+.side .name{ margin-top:10px; font-family:'UnifrakturMaguntia',cursive; font-size:18px; text-align:center; text-shadow:0 0 6px #000; }
+.side.left .name{color:var(--black);}   /* «Свобода рынок и право» */
+.side.right .name{color:#fff;}          /* «Порядок государство превыше всего» и «Тут должна быть фотография Джона Роулза» */
+
+/* ---------- 5. центр ---------- */
+.wrap{position:relative; width:680px; max-width:90vw; text-align:center; z-index:2;}
+.progress{
+  font-size:15px; color:var(--blood); margin-bottom:80px; letter-spacing:8px;
+}
+
+/* ---------- 6. карточки и ответы ---------- */
+.card{
+  background:#111; border:3px solid #333; border-radius:12px; padding:35px;
+  position:absolute; left:0; right:0; opacity:0; transform:scale(.95); transition:all .4s;
+}
+.card.active{opacity:1;transform:scale(1);position:relative;}
+.card.exit{opacity:0;transform:scale(1.05);}
+.question{
+  font-size:26px; margin-bottom:25px; font-family:'UnifrakturMaguntia',cursive;
+  line-height:1.2; letter-spacing:1px; color:var(--blood);
+}
+.answer{
+  background:#222; border:2px solid #444; padding:14px; margin:12px 0; cursor:pointer;
+  border-radius:6px; transition:all .25s; position:relative; overflow:hidden;
+}
+.answer::before{
+  content:''; position:absolute; left:-100%; top:0; width:100%; height:100%;
+  background:var(--gold); transition:left .3s; z-index:-1;
+}
+.answer:hover{color:#000;}
+.answer:hover::before{left:0;}
+.answer.disabled{pointer-events:none; background:#000; color:#555; border-color:#333;}
+.answer.correct{background:var(--gold)!important; color:#000; border-color:var(--gold);}
+.answer.incorrect{background:var(--black)!important; color:#fff; border-color:var(--black); text-decoration:line-through;}
+.answer.selected{box-shadow:0 0 15px var(--gold);}
+.explanation{
+  font-size:14px; text-align:left; margin-top:20px; color:#ccc; line-height:1.4;
+  border-left:3px solid var(--blood); padding-left:12px;
+}
+
+/* ---------- 7. кнопки ---------- */
+.btn{
+  background:var(--blood); color:#fff; font-weight:700; border:none; padding:12px 28px;
+  margin-top:25px; border-radius:6px; cursor:pointer; font-family:'JetBrains Mono',monospace;
+  font-size:15px; transition:transform .2s;
+}
+.btn:hover{transform:scale(1.08);}
+.btn:active{transform:scale(.95);}
+.final{
+  background:#000; border:3px solid #333; border-radius:12px; padding:40px;
+  opacity:0; transform:scale(.9); transition:all .5s;
+}
+.final.active{opacity:1;transform:scale(1);}
+.final h2{
+  font-family:'UnifrakturMaguntia',cursive; font-size:40px; margin:0 0 15px; color:var(--blood);
+}
+.final p{font-size:18px; margin:0 0 25px;}
+.scoreboard{
+  display:inline-block; background:#000; border:2px solid var(--blood); border-radius:6px;
+  padding:8px 16px; font-size:18px; margin-left:10px; color:var(--blood);
+}
+
+/* ---------- 8. вступление ---------- */
+.intro-wrap{position:fixed; inset:0; z-index:10; display:flex; align-items:center; justify-content:center;}
+.intro-card{
+  width:560px; max-width:90vw; background:#111; border:3px solid var(--blood); border-radius:12px;
+  padding:40px; text-align:center; transform:translateX(120%); opacity:0; transition:all .6s;
+}
+.intro-card.active{transform:translateX(0);opacity:1;}
+.intro-card.exit{transform:translateX(-120%);opacity:0;}
+.intro-card h3{
+  font-family:'UnifrakturMaguntia',cursive; font-size:28px; margin:0 0 20px; color:var(--blood);
+}
+.intro-card p{font-size:17px; line-height:1.4; margin-bottom:25px;}
+
+/* ---------- 9. подсказка ---------- */
+.hint-btn{
+  position:fixed; top:22px; right:22px; z-index:20; background:#000; border:2px solid var(--blood);
+  color:var(--blood); padding:8px 14px; border-radius:6px; cursor:pointer; font-size:14px;
+  transition:transform .2s;
+}
+.hint-btn:hover{transform:scale(1.08);}
+.hint-box{
+  position:fixed; top:65px; right:22px; width:260px; background:#000; border:2px solid var(--blood);
+  border-radius:6px; padding:12px; font-size:13px; color:#ccc; display:none; z-index:20;
+}
+.hint-box.show{display:block;}
+
+/* ==== анимация улёта / вылета карточек ==== */
+@keyframes flyOut{
+  0%   { transform:translate(0,0) scale(1); opacity:1; }
+  100% { transform:translate(120%,-120%) scale(.7); opacity:0; }
+}
+@keyframes flyIn{
+  0%   { transform:translate(-120%,120%) scale(.7); opacity:0; }
+  100% { transform:translate(0,0) scale(1); opacity:1; }
+}
+.card.fly-out{ animation:flyOut .45s ease-in forwards; }
+.card.fly-in { animation:flyIn .45s ease-out forwards; }
+
+</style>
+
+<!-- ========== 3. AUDIO-«КЛИК» (base64) ========== -->
+<audio id="click" preload="auto">
+<source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWT" type="audio/wav">
+</audio>
+    <!-- ========== 4. HTML-ТЕЛО ========== -->
+<body>
+<!-- ===== 2.1 ВСТУПЛЕНИЕ: вставьте СРАЗУ ПОСЛЕ ОТКРЫВАЮЩЕГО <body> (до <div class="stripes">) ===== -->
+<div class="intro-wrap" id="introWrap">
+<div class="intro-card active" id="ic1">
+<h3>Добро пожаловать!</h3>
+<p>Вы зашли не просто «покликать» — вы решили разобраться, как идеологии живут и меняются. В этом курсе мы сталкнем блеск короны с властью веры.</p>
+<button class="btn" onclick="nextIntro(1)">Дальше →</button>
+</div>
+<div class="intro-card" id="ic2">
+<h3>О чём курс?</h3>
+<p>Мы сравним две идеологии — монархию и теократию — на предмет изменчивости. 20 вопросов, 20 случаев, когда слова расходятся с делами (или не расходятся).</p>
+<button class="btn" onclick="nextIntro(2)">Дальше →</button>
+</div>
+<div class="intro-card" id="ic3">
+<h3>Как проходит тест?</h3>
+<p>Внизу — счётчик. Справа вверху появится кнопка «Подсказка» — нажимайте, если сложно. После каждого ответа жмите «Дальше». Удачи!</p>
+<button class="btn" onclick="nextIntro(3)">Дальше →</button>
+</div>
+<div class="intro-card" id="ic4">
+<h3>Поехали!</h3>
+<p>Ни одна идеология не застрахована от внутренних противоречий. Проверим? Нажмите «Начать» и первый вопрос откроется автоматически.</p>
+<button class="btn" onclick="startQuiz()">Начать</button>
+</div>
+</div>
+<!-- ===== 2.2 КНОПКА И БЛОК ПОДСКАЗКИ: вставьте СРАЗУ ПОСЛЕ <div class="progress">…</div> ===== -->
+<button class="hint-btn" id="hintBtn" onclick="toggleHint()">Подсказка</button>
+<div class="hint-box" id="hintBox"></div>
+<div class="stripes"></div>
+<!-- боковые «титры» -->
+<div class="side left">
+<img src="{{ url_for('static', filename='pictures/portrait_de_louis_xiv.jpg') }}" alt="Портрет Людовика XIV">
+<div class="name">ИМПЕРИЯ<br><small>корона и королевство</small></div>
+</div>
+<div class="side right">
+<img src="{{ url_for('static', filename='pictures/john_calvin.jpg') }}" alt="Портрет Жана Кальвина">
+<div class="name">РЕЛИГИЯ<br><small>власть богу и духовенству</small></div>
+</div>
+<!-- центр -->
+<div class="wrap">
+<div class="progress">ВОПРОС <span id="qNum">1</span> / 20 <span class="scoreboard" id="score">0</span></div>
+<!-- ========= 1/20 ========= -->
+<!-- 1/20 -->
+<div id="q1" class="card active" data-q="1">
+  <div class="question">Какой элемент теократии НЕ менялся с VI до XXI века?</div>
+  <div class="answer" data-correct="true">Высшая власть принадлежит Богу</div>
+  <div class="answer" data-correct="false">Форма избирательного органа</div>
+  <div class="answer" data-correct="false">Степень участия женщин в культе</div>
+  <div class="explanation" style="display:none">Ядро «Бог выше любого государства» — константа; всё остальное (халифат/сиэт/ватиканский префект) меняется.</div>
+</div>
+
+<!-- 2/20 -->
+<div id="q2" class="card" data-q="2">
+  <div class="question">Какую форму монархии изобрели в Европе XVII веке, чтобы «оживить» старую династию?</div>
+  <div class="answer" data-correct="false">Самодержавие</div>
+  <div class="answer" data-correct="true">Парламентская конституционная</div>
+  <div class="answer" data-correct="false">Теократическая</div>
+  <div class="explanation" style="display:none">Англия-1689: король сохранялся, но получал власть «от парламента» — монархия быстро сменила оболочку.</div>
+</div>
+
+<!-- 3/20 -->
+<div id="q3" class="card" data-q="3">
+  <div class="question">В какой теократической системе впервые появился выборный верховный жрец-имам?</div>
+  <div class="answer" data-correct="false">Омейяды</div>
+  <div class="answer" data-correct="true">Современный Иран (1979)</div>
+  <div class="answer" data-correct="false">Папская область VIII века</div>
+  <div class="explanation" style="display:none">Иран ввёл институт выборных «экспертов» при незыблемом принципе вилайет-и-факих.</div>
+</div>
+
+<!-- 4/20 -->
+<div id="q4" class="card" data-q="4">
+  <div class="question">Какая монархическая «фишка» исчезла быстрее всего — за одно поколение — после 1789 г.?</div>
+  <div class="answer" data-correct="true">Божественное происхождение власти</div>
+  <div class="answer" data-correct="false">Титул «король»</div>
+  <div class="answer" data-correct="false">Наследование по старшинству</div>
+  <div class="explanation" style="display:none">Франция отменила «короля по Божьему праву» мгновенно; титул и наследование вернулись позже (Наполеон-император).</div>
+</div>
+
+<!-- 5/20 -->
+<div id="q5" class="card" data-q="5">
+  <div class="question">Какой теократический институт стал секулярным за 30 лет (1870-1900)?</div>
+  <div class="answer" data-correct="false">Шариатские суды Египта</div>
+  <div class="answer" data-correct="true">Школы католической Бельгии</div>
+  <div class="answer" data-correct="false">Саудовское мутавва</div>
+  <div class="explanation" style="display:none">Бельгия вывела духовенство из классов-за 1 поколение; Египет и Саудовская Аравия сохранили религ-суд.</div>
+</div>
+
+<!-- 6/20 -->
+<div id="q6" class="card" data-q="6">
+  <div class="question">Какую монархическую «реликвию» реформировали чаще всего — 7 раз за XIX век?</div>
+  <div class="answer" data-correct="true">Право вето</div>
+  <div class="answer" data-correct="false">Тронное имя</div>
+  <div class="answer" data-correct="false">Корону</div>
+  <div class="explanation" style="display:none">Вето сжимали/расширяли в Пруссии, Бельгии, Италии, Греции… — самый «гибкий» институт.</div>
+</div>
+
+<!-- 7/20 -->
+<div id="q7" class="card" data-q="7">
+  <div class="question">Какой теократический лозунг НЕ подменялся с 632 года?</div>
+  <div class="answer" data-correct="false">Халиф — тень Аллаха на земле</div>
+  <div class="answer" data-correct="true">Шариат — выше человеческих законов</div>
+  <div class="answer" data-correct="false">Джихад обязателен</div>
+  <div class="explanation" style="display:none">Формулировки халифа и джихада менялись; постулат «Божий закон выше» — нет.</div>
+</div>
+
+<!-- 8/20 -->
+<div id="q8" class="card" data-q="8">
+  <div class="question">Какую монархическую «новинку» придумали за 48 часов в Норвегии 1905 г.?</div>
+  <div class="answer" data-correct="true">Референдум о приглашении нового короля</div>
+  <div class="answer" data-correct="false">Отмену титула «король»</div>
+  <div class="answer" data-correct="false">Выборы монарха всенародным голосованием</div>
+  <div class="explanation" style="display:none">Норвежцы «попросили» принца Дании и тут же проголосовали — монархия стала конституционно-референдной.</div>
+</div>
+
+<!-- 9/20 -->
+<div id="q9" class="card" data-q="9">
+  <div class="question">Какой теократический символ остаётся неизменным в Ватикане с 1198 г.?</div>
+  <div class="answer" data-correct="false">Цвет флага</div>
+  <div class="answer" data-correct="true">Ключи Св.Петра на гербе</div>
+  <div class="answer" data-correct="false">Форма митры папы</div>
+  <div class="explanation" style="display:none">Ключи — визуальное ядро «власти от Бога»; цвет флага и митра менялись.</div>
+</div>
+
+<!-- 10/20 -->
+<div id="q10" class="card" data-q="10">
+  <div class="question">Какую монархическую «константу» отменили навсегда за 1 день в 1918 г. в Германии?</div>
+  <div class="answer" data-correct="false">Наследование</div>
+  <div class="answer" data-correct="true">Божественное происхождение</div>
+  <div class="answer" data-correct="false">Титул «кайзер»</div>
+  <div class="explanation" style="display:none">Веймарская республика мгновенно упразднила «von Gottes Gnaden» — ядро легитимности исчезло за ночь.</div>
+</div>
+
+<!-- 11/20 -->
+<div id="q11" class="card" data-q="11">
+  <div class="question">Какой теократический институт «растянули» с 1 лица до 86 за 40 лет (1979-2019)?</div>
+  <div class="answer" data-correct="false">Совет гвардейцев</div>
+  <div class="answer" data-correct="true">Совет экспертов Ирана</div>
+  <div class="answer" data-correct="false">Синедрион</div>
+  <div class="explanation" style="display:none">Хомейни задумал узкий орган; к 2019-му в него входят десятки клириков и юристов — расширение без изменения ядра.</div>
+</div>
+
+<!-- 12/20 -->
+<div id="q12" class="card" data-q="12">
+  <div class="question">Какую монархическую «ревизию» проводили 5 раз за 200 лет в Японии?</div>
+  <div class="answer" data-correct="true">Пересмотр конституционных полномочий императора</div>
+  <div class="answer" data-correct="false">Смену династии</div>
+  <div class="answer" data-correct="false">Смену столицы</div>
+  <div class="explanation" style="display:none">Мэйдзи-1868, 1946, 1947… — каждый раз меняли суть трона, не трогая династию.</div>
+</div>
+
+<!-- 13/20 -->
+<div id="q13" class="card" data-q="13">
+  <div class="question">Какой теократический постулат «зашили» в светскую конституцию Пакистана 1956 г.?</div>
+  <div class="answer" data-correct="false">Халифат</div>
+  <div class="answer" data-correct="true">«Вся власть принадлежит Аллаху»</div>
+  <div class="answer" data-correct="false">Джизья</div>
+  <div class="explanation" style="display:none">Слова остались теократическими, но появились выборы и парламент — гибрид без отказа от ядра.</div>
+</div>
+
+<!-- 14/20 -->
+<div id="q14" class="card" data-q="14">
+  <div class="question">Какую монархическую «функцию» превратили в телешоу за 1 сезон (1969-1970) в Бельгии?</div>
+  <div class="answer" data-correct="false">Коронование</div>
+  <div class="answer" data-correct="true">Присяга парламента королю</div>
+  <div class="answer" data-correct="false">Абдикацию</div>
+  <div class="explanation" style="display:none">Трансляция в прямом эфире сделала ритуал массовым — форма сохранилась, смысл стал «публичным шоу».</div>
+</div>
+
+<!-- 15/20 -->
+<div id="q15" class="card" data-q="15">
+  <div class="question">Какой теократический налог исчез навсегда за 1 указ в Турции 1924 г.?</div>
+  <div class="answer" data-correct="false">Зекят</div>
+  <div class="answer" data-correct="true">Джизья (налог на немусульман)</div>
+  <div class="answer" data-correct="false">Ушр</div>
+  <div class="explanation" style="display:none">Ататюрк упразднил джизью за ночь — пример стремительной секуляризации без шариатского ядра.</div>
+</div>
+
+<!-- 16/20 -->
+<div id="q16" class="card" data-q="16">
+  <div class="question">Какую монархическую «честь» превратили в туристический билет за 20 лет (1950-1970) в Таиланде?</div>
+  <div class="answer" data-correct="true">Полуденный «приём аудиенций»</div>
+  <div class="answer" data-correct="false">Коронование</div>
+  <div class="answer" data-correct="false">Абдикацию</div>
+  <div class="explanation" style="display:none">Аудиенции стали «Must-see» для туристов — священный ритуал превратился в доходную аттракцию.</div>
+</div>
+
+<!-- 17/20 -->
+<div id="q17" class="card" data-q="17">
+  <div class="question">Какой теократический термин «заменили» на «государственный» за 1 год в Египте 1952-53?</div>
+  <div class="answer" data-correct="false">Фатва</div>
+  <div class="answer" data-correct="true">Шариатский суд → «народный» суд</div>
+  <div class="answer" data-correct="false">Муфтий</div>
+  <div class="explanation" style="display:none">Насер упразднил рел-суды, сохранив лозунг «Аллах — источник» в преамбуле.</div>
+</div>
+
+<!-- 18/20 -->
+<div id="q18" class="card" data-q="18">
+  <div class="question">Какую монархическую «жертву» потребовали за 72 часа в Испании 1931 г.?</div>
+  <div class="answer" data-correct="false">Казнь короля</div>
+  <div class="answer" data-correct="true">Абдикацию без крови</div>
+  <div class="answer" data-correct="false">Изгнание династии</div>
+  <div class="explanation" style="display:none">Альфонс XIII «ушёл» за 3 дня — пример стремительной смены формы без революционной бойни.</div>
+</div>
+
+<!-- 19/20 -->
+<div id="q19" class="card" data-q="19">
+  <div class="question">Какой теократический символ «перекрасили» в национальный флаг за 1 ночь в Иране 1980?</div>
+  <div class="answer" data-correct="false">Полумесяц</div>
+  <div class="answer" data-correct="true">Центр щита — слово «Аллах»</div>
+  <div class="answer" data-correct="false">Лион и Солнце</div>
+  <div class="explanation" style="display:none">Старый лион-солнце исчез, в центре — «Аллах» в виде надписи; ядро теократии сохранилось.</div>
+</div>
+
+<!-- 20/20 -->
+<div id="q20" class="card" data-q="20">
+  <div class="question">Итог: какая идеология за 1400 лет чаще меняла формы, а какая держит незыблемое ядро?</div>
+  <div class="answer" data-correct="true">Монархия — «гибкая оболочка», теократия — «жёсткое ядро»</div>
+  <div class="answer" data-correct="false">Теократия — «гибкая оболочка», монархия — «жёсткое ядро»</div>
+  <div class="answer" data-correct="false">Обе одинаково гибкие</div>
+  <div class="explanation" style="display:none">Монархи успели побывать и абсолютистами, и конституционными фигурами, а вот теократический постулат «власть от Бога» остался неизменным — менялись лишь институциональные «коробки».</div>
+</div>
+
+  <!-- финал -->
+  <div id="final" class="final">
+    <h2>ГОТОВО!</h2>
+    <p>Вы собрали <strong id="correct">0</strong> / 20 верных ответов. Вы сделали важный шаг к пониманию мира идеологий.</p>
+    <a href="/three_buttons" class="btn btn-primary">Вернуться к выбору курса</a>
+  </div>
+</div>
+
+<!-- ===== 3. ДОБАВЬТЕ ВСЁ, ЧТО НИЖЕ, ПЕРЕД ЗАКРЫВАЮЩИМ </script> ===== -->
+<script>
+/* ---------- 5. вступление ---------- */
+function nextIntro(n){
+  playClick();
+  document.getElementById('ic'+n).classList.remove('active');
+  document.getElementById('ic'+n).classList.add('exit');
+  setTimeout(()=>{
+    document.getElementById('ic'+(n+1)).classList.add('active');
+  },400);
+}
+function startQuiz(){
+  playClick();
+  document.getElementById('introWrap').style.display='none';
+  document.getElementById('hintBtn').style.display='block';
+}
+
+/* ---------- 6. подсказки ---------- */
+const hints = [
+  "Бог остаётся выше парламента и халифа.",          // 1 Высшая власть принадлежит Богу
+  "Англия-1689: король выжил, но стал «от парламента».",// 2 Парламентская конституционная
+  "Иран-1979: впервые выбирают верховного жреца.", // 3 Современный Иран (1979)
+  "Франция отменила «von Gottes Gnaden» за ночь.", // 4 Божественное происхождение власти
+  "Бельгия вывела духовенство из школ за 30 лет.", // 5 Школы католической Бельгии
+  "Пруссия, Бельгия, Италия меняли вето семь раз.",// 6 Право вето
+  "Шариат выше любых человеческих кодексов.",       // 7 Шариат — выше человеческих законов
+  "Норвежцы референдумом пригласили датского принца.",// 8 Референдум о приглашении нового короля
+  "Ключи Св.Петра на гербе Ватикана с 1198 г.",   // 9 Ключи Св.Петра на гербе
+  "Веймар упразднил «von Gottes Gnaden» в 1918.", // 10 Божественное происхождение
+  "Совет экспертов Ирана вырос с 1 до 86 человек.",// 11 Совет экспертов Ирана
+  "Япония пересматривала полномочия императора 5 раз.",//12 Пересмотр конституционных полномочий
+  "Пакистан-1956: «Вся власть принадлежит Аллаху» в светской конституции.",//13 Вся власть принадлежит Аллаху
+  "Бельгия-1969: присягу королю показали по ТВ.", // 14 Присяга парламента королю
+  "Ататюрк отменил джизью за ночь в 1924 г.",     // 15 Джизья (налог на немусульман)
+  "Таиланд сделал аудиенции туристическим шоу.",   // 16 Полуденный «приём аудиенций»
+  "Насер заменил «шариатские суды» на «народные».",//17 Шариатский суд → «народный» суд
+  "Альфонс XIII abdicatio за 72 часа без крови.",  // 18 Абдикацию без крови
+  "Иран заменил лев-солнце на слово «Аллах» в флаге.",//19 Центр щита — слово «Аллах»
+  "Монархия меняла оболочку, теократия держит ядро." //20 Итоговая
+];
+
+
+function toggleHint(){
+  playClick();
+  const box=document.getElementById('hintBox');
+  if(box.classList.contains('show')){
+    box.classList.remove('show');
+  }else{
+    box.textContent=hints[current-1]||"Подсказка закончилась.";
+    box.classList.add('show');
+  }
+}
+
+/* ---------- 7. прячем кнопку до старта ---------- */
+document.getElementById('hintBtn').style.display='none';
+</script>
+<script>
+/* ---------- 1. цифровой клик ---------- */
+const click=document.getElementById('click');
+function playClick(){click.currentTime=0;click.play();}
+
+/* ---------- 2. перемешиваем ответы ---------- */
+function shuffleAnswers(card){
+  const answers=[...card.querySelectorAll('.answer')];
+  for(let i=answers.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [answers[i],answers[j]]=[answers[j],answers[i]];
+  }
+  answers.forEach(a=>card.appendChild(a));
+}
+
+/* ---------- 3. перемешать все вопросы при старте ---------- */
+document.querySelectorAll('.card').forEach(shuffleAnswers);
+
+/* ---------- 4. логика квиза (без изменений, кроме запуска shuffle) ---------- */
+let current=1, correct=0, total=20;
+document.querySelectorAll('.answer').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    playClick();
+    const card=this.closest('.card');
+    const ok=this.dataset.correct==='true';
+    card.querySelectorAll('.answer').forEach(b=>b.classList.add('disabled'));
+    this.classList.add(ok?'correct':'incorrect');
+    if(!ok) card.querySelector('[data-correct=true]').classList.add('correct');
+    card.querySelector('.explanation').style.display='block';
+    if(ok){correct++;document.getElementById('score').textContent=correct;}
+    const nxt=document.createElement('button');
+    nxt.className='btn';
+    nxt.textContent=current===total?'Результат':'Дальше →';
+    nxt.onclick=()=>{
+      card.classList.remove('active');card.classList.add('exit');
+      if(current===total){
+        document.getElementById('final').classList.add('active');
+        document.getElementById('correct').textContent=correct;
+      }else{
+        current++;
+        document.getElementById('qNum').textContent=current;
+        fetch('/save_result/monarchy_vs_theocracy', {   // или другое название курса
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({score: correct})
+});
+
+        document.getElementById('q'+current).classList.add('active');
+      }
+    };
+    card.appendChild(nxt);
+  });
+});
+</script>
+</body>
+</html>

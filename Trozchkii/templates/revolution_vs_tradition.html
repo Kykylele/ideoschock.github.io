@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+
+<!-- ========== 1. ПОДКЛЮЧЕНИЕ ШРИФТОВ ========== -->
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+
+<!-- ========== 2. НОВЫЙ CSS ========== -->
+<style>
+:root{
+  --red:#e20000;
+  --green:#00b712;
+  --black:#0a0a0a;
+  --gold:#ffd500;
+  --blood:linear-gradient(45deg,#6a0000 25%,transparent 25%,transparent 75%,#6a0000 75%),linear-gradient(45deg,#6a0000 25%,transparent 25%,transparent 75%,#6a0000 75%);
+}
+html,body{margin:0;height:100%;}
+body{
+  background:#033500;
+  font-family:'JetBrains Mono',monospace;
+  color:#fff;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
+}
+/* фон-«заводная полоса» */
+.stripes {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+
+  /* две повторяющиеся линии 120 px = 1 клетка */
+  background:
+    /* вертикальные полосы */
+    repeating-linear-gradient(
+      to right,
+      #033500 0 120px,
+      #400000 120px 240px
+    ),
+    /* горизонтальные полосы */
+    repeating-linear-gradient(
+      to bottom,
+      #033500 0 120px,
+      #400000 120px 240px
+    );
+
+  background-size: 240px 240px; /* 2×120 px – полный цикл */
+  animation: stripes 3s linear infinite;
+}
+
+@keyframes stripes {
+  0%   { background-position: 0 0; }
+  100% { background-position: 240px 240px; }
+}
+
+
+/* ТВ-стильные «полосы» Троцкий/Столыпин */
+.side{position:fixed;top:0;bottom:0;width:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1;}
+.side.left{left:0;background:linear-gradient(to bottom,var(--red),#4b0000);}
+.side.right{right:0;background:linear-gradient(to bottom,var(--green),#004d00);}
+.side img{width:160px;height:160px;border-radius:50%;border:4px solid var(--gold);object-fit:cover;filter:saturate(1.2);}
+.side .name{margin-top:10px;font-family:'UnifrakturMaguntia',cursive;font-size:18px;text-align:center;text-shadow:0 0 6px #000;}
+
+/* центральная зона */
+.wrap{position:relative;width:680px;max-width:90vw;text-align:center;z-index:2;}
+.progress{font-size:15px;color:var(--gold);margin-bottom:80px;letter-spacing:8px;}
+
+/* карточка-вопрос */
+.card{background:#111;border:3px solid #333;border-radius:12px;padding:35px;position:absolute;left:0;right:0;opacity:0;transform:scale(.95);transition:all .4s cubic-bezier(.6,-.28,.735,.045);}
+.card.active{opacity:1;transform:scale(1);position:relative;}
+.card.exit{opacity:0;transform:scale(1.05);}
+.question{font-size:26px;margin-bottom:25px;font-family:'UnifrakturMaguntia',cursive;line-height:1.2;letter-spacing:1px;color:var(--gold);}
+
+/* кнопки-ответы */
+.answer{background:#222;border:2px solid #444;padding:14px;margin:12px 0;cursor:pointer;border-radius:6px;transition:all .25s;position:relative;overflow:hidden;}
+.answer::before{content:'';position:absolute;left:-100%;top:0;width:100%;height:100%;background:var(--gold);transition:left .3s;z-index:-1;}
+.answer:hover{color:#000;}
+.answer:hover::before{left:0;}
+.answer.disabled{pointer-events:none;background:#000;color:#555;border-color:#333;}
+.answer.correct{background:var(--green)!important;color:#fff;border-color:var(--green);}
+.answer.incorrect{background:var(--red)!important;color:#fff;border-color:var(--red);text-decoration:line-through;}
+.answer.selected{box-shadow:0 0 15px var(--gold);}
+
+/* пояснение */
+.explanation{font-size:14px;text-align:left;margin-top:20px;color:#ccc;line-height:1.4;border-left:3px solid var(--gold);padding-left:12px;}
+
+/* кнопка далее */
+.btn{background:var(--gold);color:#000;font-weight:700;border:none;padding:12px 28px;margin-top:25px;border-radius:6px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:15px;transition:transform .2s;}
+.btn:hover{transform:scale(1.08);}
+.btn:active{transform:scale(.95);}
+
+/* финал */
+.final{background:#000;border:3px solid #333;border-radius:12px;padding:40px;opacity:0;transform:scale(.9);transition:all .5s;}
+.final.active{opacity:1;transform:scale(1);}
+.final h2{font-family:'UnifrakturMaguntia',cursive;font-size:40px;margin:0 0 15px;color:var(--gold);}
+.final p{font-size:18px;margin:0 0 25px;}
+
+/* цифровой счётчик */
+.scoreboard{display:inline-block;background:#000;border:2px solid var(--gold);border-radius:6px;padding:8px 16px;font-size:18px;margin-left:10px;color:var(--gold);}
+
+  /* ==== ВСТУПЛЕНИЕ ==== */
+.intro-wrap{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;}
+.intro-card{width:560px;max-width:90vw;background:#111;border:3px solid var(--gold);border-radius:12px;padding:40px;text-align:center;transform:translateX(120%);opacity:0;transition:all .6s cubic-bezier(.6,-.28,.735,.045);}
+.intro-card.active{transform:translateX(0);opacity:1;}
+.intro-card.exit{transform:translateX(-120%);opacity:0;}
+.intro-card h3{font-family:'UnifrakturMaguntia',cursive;font-size:28px;margin:0 0 20px;color:var(--gold);}
+.intro-card p{font-size:17px;line-height:1.4;margin-bottom:25px;}
+
+/* ==== ПОДСКАЗКА ==== */
+.hint-btn{position:fixed;top:22px;right:22px;z-index:20;background:#000;border:2px solid var(--gold);color:var(--gold);padding:8px 14px;border-radius:6px;cursor:pointer;font-size:14px;transition:transform .2s;}
+.hint-btn:hover{transform:scale(1.08);}
+.hint-box{position:fixed;top:65px;right:22px;width:260px;background:#000;border:2px solid var(--gold);border-radius:6px;padding:12px;font-size:13px;color:#ccc;display:none;z-index:20;}
+.hint-box.show{display:block;}
+</style>
+
+<!-- ========== 3. AUDIO-«КЛИК» (base64) ========== -->
+<audio id="click" preload="auto">
+  <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWT" type="audio/wav">
+</audio>
+
+<!-- ========== 4. HTML-ТЕЛО ========== -->
+<body>
+
+<!-- ===== 2.1 ВСТУПЛЕНИЕ: вставьте СРАЗУ ПОСЛЕ ОТКРЫВАЮЩЕГО <body> (до <div class="stripes">) ===== -->
+<div class="intro-wrap" id="introWrap">
+  <div class="intro-card active" id="ic1">
+    <h3>Добро пожаловать!</h3>
+    <p>Вы зашли не просто «покликать» — вы решили разобраться, как идеологии живут и меняются. В этом курсе мы сталкнем вечную революцию и вечные традиции.</p>
+    <button class="btn" onclick="nextIntro(1)">Дальше →</button>
+  </div>
+  <div class="intro-card" id="ic2">
+    <h3>О чём курс?</h3>
+    <p>Мы сравним две идеологии — троцкизм и консерватизм — на предмет изменчивости. 20 вопросов, 20 случаев, когда слова расходятся с делами.</p>
+    <button class="btn" onclick="nextIntro(2)">Дальше →</button>
+  </div>
+  <div class="intro-card" id="ic3">
+    <h3>Как проходит тест?</h3>
+    <p>Внизу — счётчик. Справа вверху появится кнопка «Подсказка» — нажимайте, если сложно. После каждого ответа жмите «Дальше». Удачи!</p>
+    <button class="btn" onclick="nextIntro(3)">Дальше →</button>
+  </div>
+  <div class="intro-card" id="ic4">
+    <h3>Поехали!</h3>
+    <p>Ни одна идеология не застрахована от внутренних противоречий. Проверим? Нажмите «Начать» и первый вопрос откроется автоматически.</p>
+    <button class="btn" onclick="startQuiz()">Начать</button>
+  </div>
+</div>
+
+<!-- ===== 2.2 КНОПКА И БЛОК ПОДСКАЗКИ: вставьте СРАЗУ ПОСЛЕ <div class="progress">…</div> ===== -->
+<button class="hint-btn" id="hintBtn" onclick="toggleHint()">Подсказка</button>
+<div class="hint-box" id="hintBox"></div>
+
+
+<div class="stripes"></div>
+
+<!-- боковые «титры» -->
+<div class="side left">
+  <img src="{{ url_for('static', filename='pictures/Leon_Trotsky_(3x4_close_cropped).jpg') }}" alt="Тут должна быть фотография Льва Троцкого">
+  <div class="name">РЕВОЛЮЦИЯ<br><small>вечный двигатель</small></div>
+</div>
+<div class="side right">
+  <img src="{{ url_for('static', filename='pictures/peter-stolypin_81.jpg') }}" alt="Тут должна быть фотография Петра Столыпина">
+  <div class="name">РЕФОРМЫ<br><small>изменяем сохраняя</small></div>
+</div>
+
+<!-- центр -->
+<div class="wrap">
+  <div class="progress">ВОПРОС <span id="qNum">1</span> / 20 <span class="scoreboard" id="score">0</span></div>
+
+<!-- ========= 1/20 ========= -->
+<div id="q1" class="card active" data-q="1">
+  <div class="question">Кто первым предложил врагов «расстреливать как бешеных псов», а через 5 лет сам оказался в их числе?</div>
+  <div class="answer" data-correct="false">Столыпин</div>
+  <div class="answer" data-correct="true">Троцкий</div>
+  <div class="answer" data-correct="false">Ленин</div>
+  <div class="explanation" style="display:none">Троцкий ввёл «красный террор» как метод, но в 1927-м сам был изгнан.</div>
+</div>
+
+<!-- ========= 2/20 ========= -->
+<div id="q2" class="card" data-q="2">
+  <div class="question">Консерваторы считают: «Изменчивость» — это…</div>
+  <div class="answer" data-correct="true">Способ выжить</div>
+  <div class="answer" data-correct="false">Предательство</div>
+  <div class="answer" data-correct="false">Двигатель прогресса</div>
+  <div class="explanation" style="display:none">Берк: «Мы реформируем, чтобы сохранить» — иначе сохранишь, чтобы потерять всё.</div>
+</div>
+
+<div id="q3" class="card" data-q="3">
+  <div class="question">Кто из «аппаратчиков» IV Интернационала стал идеологом «перманентной революции» уже после смерти Троцкого?</div>
+  <div class="answer" data-correct="false">Эрнест Мандел</div>
+  <div class="answer" data-correct="true">Мишель Пабло</div>
+  <div class="answer" data-correct="false">Жан Жорёс</div>
+  <div class="explanation" style="display:none">Пабло (Михаэлис) вывел тезис «длинной перманентной революции» в эпоху деколонизации.</div>
+</div>
+
+<!-- ========= 4/20 ========= -->
+<div id="q4" class="card" data-q="4">
+  <div class="question">Кто и в 1920-е, и в 1930-е требовал избавлять государство от бюрократии?</div>
+  <div class="answer" data-correct="false">Бухарин</div>
+  <div class="answer" data-correct="true">Троцкий</div>
+  <div class="answer" data-correct="false">Зиновьев</div>
+  <div class="explanation" style="display:none">Троцкий не изменил своего отношения к бюрократии, он твердил это с трибун в 1920-е и продолжил твердить через книги в 1930-е.</div>
+</div>
+
+<!-- ========= 5/20 ========= -->
+<div id="q5" class="card" data-q="5">
+  <div class="question">Консерватор XIX века считал выборы «врагом монархии». Консерватор XXI века считает выборы…</div>
+  <div class="answer" data-correct="false">Врагом сильной централизованной власти</div>
+  <div class="answer" data-correct="true">Берегом для стоящей крепости</div>
+  <div class="answer" data-correct="false">Пустым ритуалом</div>
+  <div class="explanation" style="display:none">От Бональда до Орбана: консерватизм адаптировал демократические механизмы под современные реалии.</div>
+</div>
+
+<!-- ========= 6/20 ========= -->
+<div id="q6" class="card" data-q="6">
+  <div class="question">Какой лозунг Троцкий НЕ поменял с 1905 по 1940?</div>
+  <div class="answer" data-correct="false">Социализм в одной стране</div>
+  <div class="answer" data-correct="true">Перманентная революция</div>
+  <div class="answer" data-correct="false">Демцентрализм</div>
+  <div class="explanation" style="display:none">Догма осталась, поменялись только географические координаты «мирового пожара».</div>
+</div>
+
+<!-- ========= 7/20 ========= -->
+<div id="q7" class="card" data-q="7">
+  <div class="question">Право на аборт консерваторы 1950-х называли «убийством». Консерваторы 2020-х называют его…</div>
+  <div class="answer" data-correct="false">Свободой и правами человека</div>
+  <div class="answer" data-correct="true">Вопросом штатов</div>
+  <div class="answer" data-correct="false">Прогрессом</div>
+  <div class="explanation" style="display:none">Сломали табу, сохранили фрейм «защита жизни» — пример трансформации без отказа от ценности.</div>
+</div>
+
+<!-- ========= 8/20 ========= -->
+<div id="q8" class="card" data-q="8">
+  <div class="question">Какой троцкистский лидер 1970-х провёл «входизм» в соц-партию Франции, чтобы «перезагрузить» IV Интернационал?</div>
+  <div class="answer" data-correct="true">Эрнест Мандел</div>
+  <div class="answer" data-correct="false">Пьер Ламберт</div>
+  <div class="answer" data-correct="false">Ален Кливен</div>
+  <div class="explanation" style="display:none">Стратегия «энтризма нового типа» Мандела дала фракцию CERES.</div>
+</div>
+
+<!-- ========= 9/20 ========= -->
+<div id="q9" class="card" data-q="9">
+  <div class="question">Консерватор Дизраэли ввёл all-male выборы. Консерватор Тэтчер…</div>
+  <div class="answer" data-correct="false">Отменила выборы</div>
+  <div class="answer" data-correct="true">Женщина-премьер</div>
+  <div class="answer" data-correct="false">Национизировала сталь</div>
+  <div class="explanation" style="display:none">Ослабление железных без полной смены ядра.</div>
+</div>
+
+<!-- ========= 10/20 ========= -->
+<div id="q10" class="card" data-q="10">
+  <div class="question">Какой тезис Троцкий повторял в 1905, 1921 и 1936 без перефраз?</div>
+  <div class="answer" data-correct="false">Социализм = электрификация</div>
+  <div class="answer" data-correct="true">Кулак — классовый враг</div>
+  <div class="answer" data-correct="false">НЭП навсегда</div>
+  <div class="explanation" style="display:none">Классовая линия непреложна; менялись только способы борьбы с «врагом».</div>
+</div>
+
+<!-- ========= 11/20 ========= -->
+<div id="q11" class="card" data-q="11">
+  <div class="question">Консерватизм 1850-х: «Империя — это колонии». Консерватизм 1950-х: «Империя — это…»</div>
+  <div class="answer" data-correct="false">Колонии</div>
+  <div class="answer" data-correct="true">Содружество</div>
+  <div class="answer" data-correct="false">Позор</div>
+  <div class="explanation" style="display:none">Метод деколонизации сохранил влияние, не разрушив идею «естественной иерархии».</div>
+</div>
+
+<!-- ========= 12/20 ========= -->
+<div id="q12" class="card" data-q="12">
+  <div class="question">Троцкий 1920: «Профсоюзы — рычаг государства». Троцкий 1933: …</div>
+  <div class="answer" data-correct="false">Рычаг рынка</div>
+  <div class="answer" data-correct="true">Рычаг Красной армии</div>
+  <div class="answer" data-correct="false">Буржуазный пережиток</div>
+  <div class="explanation" style="display:none">Господство пролетариата — неизменно.</div>
+</div>
+
+<!-- ========= 13/20 ========= -->
+<div id="q13" class="card" data-q="13">
+  <div class="question">Консерваторы 1920-х: «Золотой стандарт — святое». Консерваторы 1970-х: …</div>
+  <div class="answer" data-correct="false">Золото — идол</div>
+  <div class="answer" data-correct="true">Плавающий курс</div>
+  <div class="answer" data-correct="false">Национализируем банки</div>
+  <div class="explanation" style="display:none">Смена монетарной догмы ради сохранения финансового лидерства Запада.</div>
+</div>
+
+<!-- ========= 14/20 ========= -->
+<div id="q14" class="card" data-q="14">
+  <div class="question">Кто из троцкистов первым прошёл в парламент страны «старого империализма» после Второй мировой?</div>
+  <div class="answer" data-correct="false">Пьер Франк</div>
+  <div class="answer" data-correct="true">Эрнест Мандел</div>
+  <div class="answer" data-correct="false">Джеймс Кэннон</div>
+  <div class="explanation" style="display:none">Мандел в 1965-м стал сенатором от Бельгии, доказав, что троцкисты могут участвовать в управлении государством.</div>
+</div>
+
+<!-- ========= 15/20 ========= -->
+<div id="q15" class="card" data-q="15">
+  <div class="question">Консерватор 1900-х: «Государство — опекун». Консерватор 2000-х: «Государство —…»</div>
+  <div class="answer" data-correct="false">Враг</div>
+  <div class="answer" data-correct="true">Сторож</div>
+  <div class="answer" data-correct="false">Коммунист</div>
+  <div class="explanation" style="display:none">Частичная смена роли государства без отказа от идеи порядка и иерархии.</div>
+</div>
+
+<!-- ========= 16/20 ========= -->
+<div id="q16" class="card" data-q="16">
+  <div class="question">Какая троцкистская фракция в 1939–1940 гг. обвинила Троцкого в «слишком мягком отношении к СССР»?</div>
+  <div class="answer" data-correct="true">Большинство Шахтмана</div>
+  <div class="answer" data-correct="false">Социалистическая партия США</div>
+  <div class="answer" data-correct="false">Французская секция IV</div>
+  <div class="explanation" style="display:none">Шахтман и Бёрнхам потребовали признать СССР «бюрократическим колониализмом» и отказаться от «унconditional defense».</div>
+</div>
+
+<!-- ========= 17/20 ========= -->
+<div id="q17" class="card" data-q="17">
+  <div class="question">Консерватизм 1950-х: «Гомосексуализм — преступление». Консерватизм 2020-х: …</div>
+  <div class="answer" data-correct="false">Каменный век</div>
+  <div class="answer" data-correct="true">Гражданские союзы — личное право человека</div>
+  <div class="answer" data-correct="false">Прогресс</div>
+  <div class="explanation" style="display:none">Сильный крен в сторону ОТ традиций.</div>
+</div>
+
+<!-- ========= 18/20 ========= -->
+<div id="q18" class="card" data-q="18">
+  <div class="question">Кто из троцкистов возглавил первую «объединённую секцию» в стране глобального Юга (1963)?</div>
+  <div class="answer" data-correct="false">Нахуэль Морено</div>
+  <div class="answer" data-correct="true">Ж. М. Ленин (Луис Вивальдо)</div>
+  <div class="answer" data-correct="false">Риу Мауро</div>
+  <div class="explanation" style="display:none">Секция в Аргентине стала «лабораторией» идей ТНК (троцкизм нового типа) и вдохновила Пабло на «длинную революцию».</div>
+</div>
+
+<!-- ========= 19/20 ========= -->
+<div id="q19" class="card" data-q="19">
+  <div class="question">Консерватор 1980-х: «Ядерное оружие — щит». Консерватор 2020-х: …</div>
+  <div class="answer" data-correct="false">Грех</div>
+  <div class="answer" data-correct="true">Информационные системы — новый щит</div>
+  <div class="answer" data-correct="false">Разоружимся, нужно сохранять не страхомс уничтожения</div>
+  <div class="explanation" style="display:none">Смена технологического инструмента, сохранив доктрину «сдерживания».</div>
+</div>
+
+<!-- ========= 20/20 ========= -->
+<div id="q20" class="card" data-q="20">
+  <div class="question">Итог: кто за 100 лет изменил свою иделогию?</div>
+  <div class="answer" data-correct="false">Оба</div>
+  <div class="answer" data-correct="true">Консерваторы</div>
+  <div class="answer" data-correct="false">Троцкисты</div>
+  <div class="answer" data-correct="false">Никто</div>
+  <div class="explanation" style="display:none">Троцкий: мировая революция навсегда. Консерватизм: от золота к плавающему курсу, от колоний к Содружеству, от тюрем для ЛГБТ к гражданским союзам.</div>
+</div>
+
+  <!-- финал -->
+  <div id="final" class="final">
+    <h2>ГОТОВО!</h2>
+    <p>Вы собрали <strong id="correct">0</strong> / 20 верных ответов. Вы сделали важныЙ шаг к пониманию мира идеологий.</p>
+    <a href="/three_buttons" class="btn btn-primary">Вернуться к выбору курса</a>
+  </div>
+</div>
+
+<!-- ===== 3. ДОБАВЬТЕ ВСЁ, ЧТО НИЖЕ, ПЕРЕД ЗАКРЫВАЮЩИМ </script> ===== -->
+<!-- ===== 3. ДОБАВЬТЕ ВСЁ, ЧТО НИЖЕ, ПЕРЕД ЗАКРЫВАЮЩИМ </body> ===== -->
+<script>
+  /* ---------- 5. вступление ---------- */
+  function nextIntro(n){
+    playClick();
+    document.getElementById('ic'+n).classList.remove('active');
+    document.getElementById('ic'+n).classList.add('exit');
+    setTimeout(()=>{
+      document.getElementById('ic'+(n+1)).classList.add('active');
+    },400);
+  }
+
+  function startQuiz(){
+    playClick();
+    document.getElementById('introWrap').style.display='none';
+    document.getElementById('hintBtn').style.display='block';
+  }
+
+  /* ---------- 6. подсказки ---------- */
+  const hints=[
+    "1905-й и 1937-й — одна и та же фамилия на обложке газет.",
+    "Консерваторы учатся у врага, чтобы выжить самим.",
+    "Инициалы М.П. — не Маркс, не Макдональд.",
+    "Орган, который он критиковал, позже стал его тюремщиком.",
+    "От колоний к Содружеству — всё ещё флаг, но уже без крови.",
+    "Фраза-красная нить на всех этапах его жизни.",
+    "Сначала табу, потом — юридический компромисс.",
+    "Секция CERES — французская аббревиатура.",
+    "Железная леди внутри железной партии.",
+    "Кулак — враг, даже если ты сам из деревни.",
+    "Империя умерла, но флаг остался.",
+    "Красная армия — последний аргумент революции.",
+    "Золото ушло, но контроль остался.",
+    "Бельгийский сенатор — не французский министр.",
+    "Сторож — не няня.",
+    "Фракция Шахтмана — это не шахтёрская, а фамилии.",
+    "От криминала — к компромиссу, но без парада.",
+    "Латиноамериканский Ленин — не тот, что в мавзолее.",
+    "Ядерный щит сменился цифровым.",
+    "Смотрите на даты: кто больше поменял лозунги?"
+  ];
+
+  function toggleHint(){
+    playClick();
+    const box=document.getElementById('hintBox');
+    if(box.classList.contains('show')){
+      box.classList.remove('show');
+    }else{
+      box.textContent=hints[current-1]||"Подсказка закончилась.";
+      box.classList.add('show');
+    }
+  }
+
+  /* ---------- 7. прячем кнопку до старта ---------- */
+  document.getElementById('hintBtn').style.display='none';
+
+  /* ---------- 1. цифровой клик ---------- */
+  const click=document.getElementById('click');
+  function playClick(){
+    click.currentTime=0;
+    click.play();
+  }
+
+  /* ---------- 2. перемешиваем ответы ---------- */
+  function shuffleAnswers(card){
+    const answers=[...card.querySelectorAll('.answer')];
+    for(let i=answers.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [answers[i],answers[j]]=[answers[j],answers[i]];
+    }
+    answers.forEach(a=>card.appendChild(a));
+  }
+
+  /* ---------- 3. перемешать все вопросы при старте ---------- */
+  document.querySelectorAll('.card').forEach(shuffleAnswers);
+
+  /* ---------- 4. логика квиза (ОДИН ЕДИНСТВЕННЫЙ!) ---------- */
+  let current=1, correct=0, total=20;
+
+  document.querySelectorAll('.answer').forEach(btn=>{
+    btn.addEventListener('click',function(){
+      playClick();
+      const card=this.closest('.card');
+      const ok=this.dataset.correct==='true';
+      card.querySelectorAll('.answer').forEach(b=>b.classList.add('disabled'));
+      this.classList.add(ok?'correct':'incorrect');
+      if(!ok) card.querySelector('[data-correct=true]').classList.add('correct');
+      card.querySelector('.explanation').style.display='block';
+      if(ok){
+        correct++;
+        document.getElementById('score').textContent=correct;
+      }
+
+      // Создаём кнопку "Дальше" или "Результат"
+      const nxt = document.createElement('button');
+      nxt.className = 'btn';
+      nxt.textContent = current === total ? 'Результат' : 'Дальше →';
+      nxt.onclick = () => {
+        playClick();
+        card.classList.remove('active');
+        card.classList.add('exit');
+
+        if (current === total) {
+          // Отправляем результат на сервер
+          fetch('/save_result/revolution_vs_tradition', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({score: correct})
+          })
+          .then(() => {
+            // После успешной отправки — редирект на результат
+            window.location.href = '/revolution_vs_tradition_res';
+          })
+          .catch(() => {
+            // На всякий случай — если ошибка сети, всё равно редиректим
+            window.location.href = '/revolution_vs_tradition_res';
+          });
+        } else {
+          current++;
+          document.getElementById('qNum').textContent = current;
+          fetch('/save_result/revolution_vs_tradition', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({score: correct})
+          });
+          document.getElementById('q' + current).classList.add('active');
+        }
+      };
+      card.appendChild(nxt);
+    });
+  });
+</script>
+</body>
+</html>
