@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ИдеоШок</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Orbitron:wght@400;700&family=Rubik:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(1deg, #f0f0f0, #0f0f0f);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Bangers', cursive;
+            position: relative;
+        }
+
+        .background-sections {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .section {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 25px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            text-align: center;
+        }
+
+        /* Trotskyism - left vertical strip */
+        .trotskyism {
+            width: 15%;
+            height: 100%;
+            left: 0;
+            background: linear-gradient(to right, rgba(255, 0, 0, 1), rgba(255, 0, 0, 1));
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            letter-spacing: 10px;
+        }
+
+        /* Conservatism - second vertical strip */
+        .conservatism {
+            width: 15%;
+            height: 100%;
+            left: 15%;
+            background: linear-gradient(to right, rgba(0, 255, 0, 0.5), rgba(0, 255, 0, 0.5));
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            letter-spacing: 6px;
+        }
+
+        /* Liberalism - top horizontal strip */
+        .liberalism {
+            width: 40%;
+            height: 50%;
+            left: 30%;
+            top: 100;
+            background: linear-gradient(to bottom, rgba(0, 0, 255, 0.5), rgba(0, 0, 255, 0.5));
+        }
+
+        /* Fascism - bottom horizontal strip */
+        .fascism {
+            width: 40%;
+            height: 50%;
+            left: 30%;
+            bottom: 0%;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5));
+        }
+
+        /* Monarchy - right vertical strip */
+        .monarchy {
+            width: 15%;
+            height: 100%;
+            right: 15%;
+            background: linear-gradient(to left, rgba(255, 200, 0, 0.5), rgba(255, 200, 0, 0.5));
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            letter-spacing: 6px;
+        }
+
+        /* Theocracy - last vertical strip */
+        .theocracy {
+            width: 15%;
+            height: 100%;
+            right: 0;
+            background: linear-gradient(to left, rgba(0, 0, 0, 1), rgba(0, 0, 0, 1));
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            letter-spacing: 10px;
+        }
+
+        .top-bar {
+            width: 100%;
+            background-color: #0f0f0f;
+            color: #fff;
+            text-align: center;
+            padding: 20px 0;
+            font-size: 36px;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .content-block {
+            background-color: #222;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            z-index: 1;
+            display: flex; /* Добавил flex для правильного расположения */
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 200px; /* Минимальная высота, чтобы текст не наезжал */
+           }
+
+        .title {
+            font-family: 'UnifrakturMaguntia';
+            font-size: 48px;
+            color: #fff;
+            text-shadow: 2px 2px 4px #000000, -1px -1px 1px #fff;
+            letter-spacing: 3px;
+            transform: skew(-5deg);
+            margin-bottom: 20px; /* Отступ между заголовком и подзаголовком */
+        }
+
+        .subtitle {
+            font-family: 'UnifrakturMaguntia';
+            font-size: 24px;
+            color: #fff;
+            text-shadow: 2px 2px 4px #000000, -1px -1px 1px #fff;
+            letter-spacing: 3px;
+            transform: skew(-5deg);
+            margin-bottom: 30px; /* Отступ между подзаголовком и кнопкой */
+        }
+
+        .main-button {
+            padding: 20px 40px;
+            background-color: #333;
+            border: 2px solid #555;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 28px;
+            color: #fff;
+            font-family: 'UnifrakturMaguntia';
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            margin-top: auto; /* Кнопка прижимается вниз */
+        }
+
+
+        .main-button:hover {
+            background-color: #444;
+            transform: scale(1.05);
+        }
+
+        .bottom-bar {
+            width: 100%;
+            background-color: #0f0f0f;
+            color: #fff;
+            text-align: center;
+            padding: 20px 0;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        IDEOSHOCK
+    </div>
+
+    <div class="background-sections">
+        <div class="section trotskyism">Trotskyism</div>
+        <div class="section conservatism">Conservatism</div>
+        <div class="section liberalism">Liberalism</div>
+        <div class="section fascism">Fascism</div>
+        <div class="section monarchy">Monarchy</div>
+        <div class="section theocracy">Theocracy</div>
+    </div>
+
+    <div class="content-block">
+        <div class="title">IDEOSHOCK</div>
+        <div class="subtitle">Докажи, что твой выбор -- осознанный!</div>
+        <a href="{{ url_for('three_buttons') }}" class="main-button">Пройти тест ИдеоШок!</a>
+    </div>
+
+    <div class="bottom-bar">
+        Погрузись в мир политических идеологий
+    </div>
+</body>
+</html>
