@@ -2,9 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<!-- ========== 1. ПОДКЛЮЧЕНИЕ ШРИФТОВ ========== -->
 <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
-<!-- ========== 2. НОВЫЙ CSS ========== -->
 <style>
 :root{
   --blue:#00bfff;
@@ -22,7 +20,6 @@ body{
   align-items:center;
   overflow:hidden;
 }
-/* анимация: синие и серые полосы */
 .stripes{
   position:fixed; inset:0; z-index:0;
   background:
@@ -33,7 +30,6 @@ body{
 }
 @keyframes stripes{ to{background-position:240px 240px;} }
 
-/* боковые панели: синяя слева, серая справа */
 .side{
   position:fixed; top:0; bottom:0; width:220px; display:flex;
   flex-direction:column; align-items:center; justify-content:center; z-index:1;
@@ -43,11 +39,9 @@ body{
 .side img{width:160px;height:160px;border-radius:50%;border:4px solid var(--gold);object-fit:cover;filter:saturate(1.2);}
 .side .name{margin-top:10px;font-family:'UnifrakturMaguntia',cursive;font-size:18px;text-align:center;text-shadow:0 0 6px #000;}
 
-/* центр */
 .wrap{position:relative;width:680px;max-width:90vw;text-align:center;z-index:2;}
 .progress{font-size:15px;color:var(--gold);margin-bottom:80px;letter-spacing:8px;}
 
-/* карточки и ответы */
 .card{background:#111;border:3px solid #333;border-radius:12px;padding:35px;position:absolute;left:0;right:0;opacity:0;transform:scale(.95);transition:all .4s;}
 .card.active{opacity:1;transform:scale(1);position:relative;}
 .card.exit{opacity:0;transform:scale(1.05);}
@@ -70,7 +64,6 @@ body{
 .final p{font-size:18px;margin:0 0 25px;}
 .scoreboard{display:inline-block;background:#000;border:2px solid var(--gold);border-radius:6px;padding:8px 16px;font-size:18px;margin-left:10px;color:var(--gold);}
 
-/* вступление */
 .intro-wrap{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;}
 .intro-card{width:560px;max-width:90vw;background:#111;border:3px solid var(--gold);border-radius:12px;padding:40px;text-align:center;transform:translateX(120%);opacity:0;transition:all .6s;}
 .intro-card.active{transform:translateX(0);opacity:1;}
@@ -78,19 +71,15 @@ body{
 .intro-card h3{font-family:'UnifrakturMaguntia',cursive;font-size:28px;margin:0 0 20px;color:var(--gold);}
 .intro-card p{font-size:17px;line-height:1.4;margin-bottom:25px;}
 
-/* подсказка */
 .hint-btn{position:fixed;top:22px;right:22px;z-index:20;background:#000;border:2px solid var(--gold);color:var(--gold);padding:8px 14px;border-radius:6px;cursor:pointer;font-size:14px;transition:transform .2s;}
 .hint-btn:hover{transform:scale(1.08);}
 .hint-box{position:fixed;top:65px;right:22px;width:260px;background:#000;border:2px solid var(--gold);border-radius:6px;padding:12px;font-size:13px;color:#ccc;display:none;z-index:20;}
 .hint-box.show{display:block;}
 </style>
-<!-- ========== 3. AUDIO-«КЛИК» (base64) ========== -->
 <audio id="click" preload="auto">
 <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmFgU7k9n1unEiBC13yO/eizEIHWq+8+OWT" type="audio/wav">
 </audio>
-    <!-- ========== 4. HTML-ТЕЛО ========== -->
 <body>
-<!-- ===== 2.1 ВСТУПЛЕНИЕ: вставьте СРАЗУ ПОСЛЕ ОТКРЫВАЮЩЕГО <body> (до <div class="stripes">) ===== -->
 <div class="intro-wrap" id="introWrap">
 <div class="intro-card active" id="ic1">
 <h3>Добро пожаловать!</h3>
@@ -113,11 +102,9 @@ body{
 <button class="btn" onclick="startQuiz()">Начать</button>
 </div>
 </div>
-<!-- ===== 2.2 КНОПКА И БЛОК ПОДСКАЗКИ: вставьте СРАЗУ ПОСЛЕ <div class="progress">…</div> ===== -->
 <button class="hint-btn" id="hintBtn" onclick="toggleHint()">Подсказка</button>
 <div class="hint-box" id="hintBox"></div>
 <div class="stripes"></div>
-<!-- боковые «титры» -->
 <div class="side left">
 <img src="{{ url_for('static', filename='pictures/John_Rawls.jpg') }}" alt="Тут должна быть фотография Джона Роулза">
 <div class="name">СВОБОДА<br><small>рынок и право</small></div>
@@ -126,10 +113,9 @@ body{
 <img src="{{ url_for('static', filename='pictures/Benito_Mussolini.jpg') }}" alt="Тут должна быть фотография Бенито Муссолини">
 <div class="name">ПОРЯДОК<br><small>государство превыше всего</small></div>
 </div>
-<!-- центр -->
+  
 <div class="wrap">
 <div class="progress">ВОПРОС <span id="qNum">1</span> / 20 <span class="scoreboard" id="score">0</span></div>
-<!-- ========= 1/20 ========= -->
 <div id="q1" class="card active" data-q="1">
 <div class="question">Кто первым провозгласил «свободу слова», а потом ввёл цензуру для «защиты порядка»?</div>
 <div class="answer" data-correct="false">Муссолини</div>
@@ -137,7 +123,7 @@ body{
 <div class="answer" data-correct="false">Гоббс</div>
 <div class="explanation" style="display:none">Локк формулировал свободу слова, но в колониальной администрации допускал ограничения «ради порядка».</div>
 </div>
-<!-- ========= 2/20 ========= -->
+  
 <div id="q2" class="card" data-q="2">
 <div class="question">Фашисты считают: «Свобода» — это…</div>
 <div class="answer" data-correct="false">Предательство</div>
@@ -145,6 +131,7 @@ body{
 <div class="answer" data-correct="false">Двигатель прогресса</div>
 <div class="explanation" style="display:none">Муссолини: «Плутократия прячется за лозунгом свободы» — порядок важнее.</div>
 </div>
+  
 <div id="q3" class="card" data-q="3">
 <div class="question">Кто из либералов стал идеологом «неограниченного рынка» уже после Второй мировой?</div>
 <div class="answer" data-correct="false">Кейнс</div>
@@ -152,7 +139,7 @@ body{
 <div class="answer" data-correct="false">Равлз</div>
 <div class="explanation" style="display:none">Фридман вывел тезис «рынок регулирует всё» в эпоху госрегулирования.</div>
 </div>
-<!-- ========= 4/20 ========= -->
+  
 <div id="q4" class="card" data-q="4">
 <div class="question">Кто и в 1920-е, и в 1950-е требовал свободы предпринимательства?</div>
 <div class="answer" data-correct="false">Муссолини</div>
@@ -160,7 +147,7 @@ body{
 <div class="answer" data-correct="false">Декарт</div>
 <div class="explanation" style="display:none">Хайек не изменил своего отношения к рынку, он твердил это с трибун в 1920-е и продолжал твердить через книги в 1950-е.</div>
 </div>
-<!-- ========= 5/20 ========= -->
+  
 <div id="q5" class="card" data-q="5">
 <div class="question">Фашист 1920-х: «Корпорации — рука государства». Фашист 2000-х: «Корпорации —…»</div>
 <div class="answer" data-correct="false">Враг народа</div>
@@ -168,7 +155,7 @@ body{
 <div class="answer" data-correct="false">Прошлый век</div>
 <div class="explanation" style="display:none">От Муссолини до современных техно-авторитариев: фашизм адаптировал рыночные механизмы под современные реалии.</div>
 </div>
-<!-- ========= 6/20 ========= -->
+
 <div id="q6" class="card" data-q="6">
 <div class="question">Какой лозунг фашисты НЕ поменяли с 1920 по 1945?</div>
 <div class="answer" data-correct="false">Свобода предпринимательства</div>
@@ -176,7 +163,7 @@ body{
 <div class="answer" data-correct="false">Парламент — опора народа</div>
 <div class="explanation" style="display:none">Догма осталась, поменялись только способы достижения «порядка».</div>
 </div>
-<!-- ========= 7/20 ========= -->
+
 <div id="q7" class="card" data-q="7">
 <div class="question">Право на забастовку либералы 1930-х называли «свободой». Либералы 2020-х называют его…</div>
 <div class="answer" data-correct="false">Произволом профсоюзов</div>
@@ -192,7 +179,7 @@ body{
   <div class="answer" data-correct="false">Тэтчер</div>
   <div class="explanation" style="display:none">Чикагские мальчики воплотили идеи Фридмана: приватизация, дерегуляция, жёсткая монетаристская политика.</div>
 </div>
-<!-- ========= 9/20 ========= -->
+
 <div id="q9" class="card" data-q="9">
   <div class="question">Фашисты 1930-х: «Парламент — базар». Фашисты 2010-х: «Парламент —…»</div>
   <div class="answer" data-correct="false">Музей</div>
@@ -201,7 +188,7 @@ body{
   <div class="explanation" style="display:none">Современные авторитарные режимы сохраняют парламент как декорацию, но выводят решения за кулисы.</div>
 </div>
 
-<!-- ========= 10/20 ========= -->
+
 <div id="q10" class="card" data-q="10">
   <div class="question">Кто из либералов 1990-х признал «ошибкой» свою приватизационную программу?</div>
   <div class="answer" data-correct="false">Чубайс</div>
@@ -210,7 +197,7 @@ body{
   <div class="explanation" style="display:none">Гайдар в 1998-м: «Мы недооценили социальные издержки» — пример внутренней коррекции идеологии.</div>
 </div>
 
-<!-- ========= 11/20 ========= -->
+
 <div id="q11" class="card" data-q="11">
   <div class="question">Фашистский термин «корпоратизм» в 2020-х маскируется словом…</div>
   <div class="answer" data-correct="false">Синдикализм</div>
@@ -219,7 +206,7 @@ body{
   <div class="explanation" style="display:none">Суть та же — государство координирует крупный бизнес, но под новым брендом.</div>
 </div>
 
-<!-- ========= 12/20 ========= -->
+
 <div id="q12" class="card" data-q="12">
   <div class="question">Либералы 1960-х: «Госрег — зло». Либералы 2020-х: «Госрег —…»</div>
   <div class="answer" data-correct="false">Зло</div>
@@ -228,7 +215,6 @@ body{
   <div class="explanation" style="display:none">От антимонопольных правил до GDPR — либерализм адаптировался и принял «умное» регулирование.</div>
 </div>
 
-<!-- ========= 13/20 ========= -->
 <div id="q13" class="card" data-q="13">
   <div class="question">Кто из фашистов ввёл «сберкнижки» для трудящихся, но назвал их «свободой труда»?</div>
   <div class="answer" data-correct="false">Гитлер</div>
@@ -237,7 +223,6 @@ body{
   <div class="explanation" style="display:none">Opera Nazionale Dopolavoro — контроль досуга под лозунгом «защиты трудящихся».</div>
 </div>
 
-<!-- ========= 14/20 ========= -->
 <div id="q14" class="card" data-q="14">
   <div class="question">Либеральный лозунг 2008 г.: «Too big to fail». Что он скрывал?</div>
   <div class="answer" data-correct="false">Свободу банков</div>
@@ -246,7 +231,6 @@ body{
   <div class="explanation" style="display:none">Рыночная риторика оправдала государственные bail-out’ы — идеология подстроилась под кризис.</div>
 </div>
 
-<!-- ========= 15/20 ========= -->
 <div id="q15" class="card" data-q="15">
   <div class="question">Фашисты 1940-х: «СМИ — громкоговоритель народа». Фашисты 2020-х: «СМИ —…»</div>
   <div class="answer" data-correct="false">Независимый контроль</div>
@@ -255,7 +239,6 @@ body{
   <div class="explanation" style="display:none">Ярлык «иноагент» позволяет сохранить форму свободы слова, но вычеркнуть нежелательные голоса.</div>
 </div>
 
-<!-- ========= 16/20 ========= -->
 <div id="q16" class="card" data-q="16">
   <div class="question">Кто из либералов признал «право на забвение» в 2014 г.?</div>
   <div class="answer" data-correct="false">Фридман</div>
@@ -264,7 +247,6 @@ body{
   <div class="explanation" style="display:none">Европейский суд постановил: личность может требовать удаления данных — новая «свобода» в цифру.</div>
 </div>
 
-<!-- ========= 17/20 ========= -->
 <div id="q17" class="card" data-q="17">
   <div class="question">Фашисты: «Выборы каждые 5 лет — демократия». Либералы 2020-х: «Выборы каждые…»</div>
   <div class="answer" data-correct="false">10 лет</div>
@@ -272,8 +254,7 @@ body{
   <div class="answer" data-correct="false">Когда захотят элиты</div>
   <div class="explanation" style="display:none">Цифровые инструменты (онлайн-голосования, праймериз) расширили выборность без изменения цикла.</div>
 </div>
-
-<!-- ========= 18/20 ========= -->
+  
 <div id="q18" class="card" data-q="18">
   <div class="question">Какой лозунг НЕ менялся у фашистов с 1920 по 2020?</div>
   <div class="answer" data-correct="false">Свобода рынка</div>
@@ -282,7 +263,6 @@ body{
   <div class="explanation" style="display:none">Культ сильного единого лидера остаётся константой, остальное — оболочка.</div>
 </div>
 
-<!-- ========= 19/20 ========= -->
 <div id="q19" class="card" data-q="19">
   <div class="question">Либералы 1990-х: «Интернет — свобода». Либералы 2020-х: «Интернет —…»</div>
   <div class="answer" data-correct="false">Свобода</div>
@@ -291,7 +271,6 @@ body{
   <div class="explanation" style="display:none">От кибербезопасности до «законов против фейков» — либерализм ввёл гос-контроль в сеть.</div>
 </div>
 
-<!-- ========= 20/20 ========= -->
 <div id="q20" class="card" data-q="20">
   <div class="question">Фашисты и либералы одновременно использовали слово «свобода» в 1930-х. Что различало их смысл?</div>
   <div class="answer" data-correct="false">Только объём</div>
@@ -299,7 +278,7 @@ body{
   <div class="answer" data-correct="false">Язык</div>
   <div class="explanation" style="display:none">Либералы — свобода личности; фашисты — «свобода нации от внутреннего хаоса». Один термин — два мира.</div>
 </div>
-  <!-- финал -->
+
   <div id="final" class="final">
     <h2>ГОТОВО!</h2>
     <p>Вы собрали <strong id="correct">0</strong> / 20 верных ответов. Вы сделали важный шаг к пониманию мира идеологий.</p>
@@ -307,9 +286,7 @@ body{
   </div>
 </div>
 
-<!-- ===== 3. ДОБАВЬТЕ ВСЁ, ЧТО НИЖЕ, ПЕРЕД ЗАКРЫВАЮЩИМ </script> ===== -->
 <script>
-/* ---------- 5. вступление ---------- */
 function nextIntro(n){
   playClick();
   document.getElementById('ic'+n).classList.remove('active');
@@ -324,7 +301,6 @@ function startQuiz(){
   document.getElementById('hintBtn').style.display='block';
 }
 
-/* ---------- 6. подсказки ---------- */
 const hints = [
   "Колония в порядке — слово в кандалах: тот же автор.",
   "Свобода как рынок беспредела: Муссолини не одобрял.",
@@ -348,7 +324,6 @@ const hints = [
   "Свобода индивида ≠ свобода коллектива — разные миры."
 ];
 
-
 function toggleHint(){
   playClick();
   const box=document.getElementById('hintBox');
@@ -360,17 +335,13 @@ function toggleHint(){
   }
 }
 
-/* ---------- 7. прячем кнопку до старта ---------- */
 document.getElementById('hintBtn').style.display='none';
 </script>
 
 
 <script>
-/* ---------- 1. цифровой клик ---------- */
 const click=document.getElementById('click');
 function playClick(){click.currentTime=0;click.play();}
-
-/* ---------- 2. перемешиваем ответы ---------- */
 function shuffleAnswers(card){
   const answers=[...card.querySelectorAll('.answer')];
   for(let i=answers.length-1;i>0;i--){
@@ -380,10 +351,7 @@ function shuffleAnswers(card){
   answers.forEach(a=>card.appendChild(a));
 }
 
-/* ---------- 3. перемешать все вопросы при старте ---------- */
 document.querySelectorAll('.card').forEach(shuffleAnswers);
-
-/* ---------- 4. логика квиза (без изменений, кроме запуска shuffle) ---------- */
 let current=1, correct=0, total=20;
 document.querySelectorAll('.answer').forEach(btn=>{
   btn.addEventListener('click',function(){
@@ -406,7 +374,7 @@ document.querySelectorAll('.answer').forEach(btn=>{
       }else{
         current++;
         document.getElementById('qNum').textContent=current;
-        fetch('/save_result/libertad_vs_fascismo', {   // или другое название курса
+        fetch('/save_result/libertad_vs_fascismo', {   
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({score: correct})
